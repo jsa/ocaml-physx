@@ -19,17 +19,15 @@ $(MODULE).cmx: $(interfaces:.i=.cmx)
 	$(OCAMLOPT) -pack -o $@ $^
 
 # All implementations depend on (compiled) interfaces
-# (a little too wide, everything depends on everything)
-$(interfaces:.i=.ml):	$(interfaces:.i=.cmi)
+$(interfaces:.i=.ml): %.ml: %.cmi
 
 # Generalized SWIG dependencies
 
 # All interfaces depend on SWIG interface
 $(interfaces:.i=.mli): swig.cmi
 
-# All compilations depend on SWIG
-# (a little too wide, everything depends on everything)
-$(interfaces:.i=.cmx): $(interfaces:.i=_wrap.cxx.o) swig.cmx
+# All implementations depend on SWIG
+$(interfaces:.i=.cmx): %.cmx: %_wrap.cxx.o swig.cmx
 
 # SWIG checkout instructions
 swig.ml swig.mli:
@@ -40,22 +38,22 @@ partialclean::
 
 # Production rules
 
-.SUFFIXES: .i _wrap.cxx .cxx .cxx.c .ml .mli .cmx .cmi
-
 # All productions from SWIG interfaces
-.i.ml .i.mli .i_wrap.cxx:
-	$(SWIG) $(SWIG_FLAGS) $(SWIG_DEFINES) $(INCLUDES) $<
+%.ml %.mli %_wrap.cxx: %.i
+	$(SWIG) $(SWIG_FLAGS) $(SWIG_DEFINES) $(INCLUDES) -o $(<:.i=_wrap.cxx) $<
 
 # SWIG C++ suffix fix
-.cxx.cxx.c:
-	cp $< $<.c
+%.cxx.c : %.cxx
+	cp $< $@
 
 # Compile C++ sources
-.c.o:
-	$(OCAMLOPT) $(COMPFLAGS) $<
+%.o : %.c
+	$(OCAMLOPT) $(COMPFLAGS) -o $@ $<
 
 # Compile OCaml sources
-.ml.cmx .mli.cmi:
-	$(OCAMLOPT) -for-pack $(MODULE) -c $<
+%.cmx: %.ml
+	$(OCAMLOPT) -for-pack $(MODULE) -c -o $@ $<
+%.cmi: %.mli
+	$(OCAMLOPT) -for-pack $(MODULE) -c -o $@ $<
 
 include .depend
