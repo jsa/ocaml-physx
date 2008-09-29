@@ -6,18 +6,26 @@ defaultentry:
 
 all: glut physx
 
+install:: partialinstall
+
 clean:: partialclean
 
 # OpenGL bindings
 glut:
-	cd glut; $(MAKE) all
+	cd glut && $(MAKE) all
+
+partialinstall::
+	cd glut && $(MAKE) install
 
 partialclean::
-	cd glut; $(MAKE) clean
+	cd glut && $(MAKE) clean
 
 # PhysX
 physx:
-	cd physx; $(MAKE) all
+	cd physx && $(MAKE) all
+
+partialinstall::
+	cd physx && $(MAKE) install
 
 partialclean::
-	cd physx; $(MAKE) clean
+	cd physx && $(MAKE) clean

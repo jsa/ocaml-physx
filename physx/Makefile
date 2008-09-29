@@ -1,35 +1,31 @@
 
 include ../config/Makefile ../Makefile.rules
 
-MODULE=PhysX
+MODULE=libphysx
 PHYSX_INCL=\
 	PhysXLoader/include \
 	Physics/include \
 	Foundation/include
 INCLUDES=$(PHYSX_INCL:%=-I$(PHYSX_HOME)/SDKs/%)
+VER=0.1
 
 interfaces := $(wildcard *.i)
 
-all: $(MODULE).cmx
+all: $(MODULE).cmxa
+
+install:: partialinstall
 
 clean:: partialclean
 
 # Main module
-$(MODULE).cmx: $(interfaces:.i=.cmx)
-	$(OCAMLOPT) -pack -o $@ $^
+$(MODULE).cmxa: $(interfaces:.i=.cmx) $(interfaces:.i=_wrap.cxx.o)
+	$(OCAMLOPT) -a -o $@ *.cmx *_wrap.cxx.o
 
-# All implementations depend on (compiled) interfaces
-$(interfaces:.i=.ml): %.ml: %.cmi
-
-# Generalized SWIG dependencies
-
-# All interfaces depend on SWIG interface
-$(interfaces:.i=.mli): swig.cmi
-
-# All implementations depend on SWIG
-$(interfaces:.i=.cmx): %.cmx: %_wrap.cxx.o swig.cmx
+partialinstall::
+	# also $(MODULE).cma
+	cp *.cmi *.cmx $(MODULE).cmxa $(MODULE).a $(LIBDIR)
 
 partialclean::
-	rm -f *.ml* *.o *.cxx *.c *.cm? swig.*
+	rm -f *.ml* *.a *.o *.cxx *.c *.cm* swig.*
 
 include .depend

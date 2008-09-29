@@ -1,0 +1,5 @@
+PhysXLoader.cmo: swig.cmi PhysXLoader.cmi 
+PhysXLoader.cmx: swig.cmx PhysXLoader.cmi 
+PhysXLoader.cmi: swig.cmi 
+swig.cmo: swig.cmi 
+swig.cmx: swig.cmi 

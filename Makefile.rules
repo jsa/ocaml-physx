@@ -1,0 +1,28 @@
+
+# SWIG checkout instructions
+swig.ml swig.mli:
+	$(SWIGCO) $@
+
+# Production rules
+
+# All productions from SWIG interfaces
+%.ml %.mli %_wrap.cxx: %.i
+	$(SWIG) $(SWIG_FLAGS) $(SWIG_DEFINES) $(INCLUDES) -o $(<:.i=_wrap.cxx) $<
+
+# SWIG C++ suffix fix
+%.cxx.c : %.cxx
+	cp $< $@
+
+# Compile C++ sources
+%.o : %.c
+	$(OCAMLOPT) -ccopt "-shared -w $(INCLUDES) -DNX_CALL_CONV=\"\" -DNX32 -DLINUX \"-DNX_C_EXPORT=extern \\\"C\\\"\" -DNXP_DLL_EXPORT=\"\" -DNXF_DLL_EXPORT=\"\" -xc++ -fPIC" -c -o $@ $<
+
+# Native OCaml compilation
+%.cmi: %.mli
+	$(OCAMLOPT) -for-pack $(MODULE) -c -o $@ $<
+%.cmx: %.ml
+	$(OCAMLOPT) -for-pack $(MODULE) -c -o $@ $<
+
+# OCaml bytecode compilation
+%.cmo: %.ml
+	$(OCAMLC) -o $@ $<
