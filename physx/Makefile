@@ -2,31 +2,34 @@
 include ../config/Makefile
 
 MODULE=PhysX
-INTERFACES=PhysXLoader
-INCLUDES=\
-	-I$(PHYSX_HOME)/SDKs/PhysXLoader/include \
-	-I${PHYSX_HOME}/SDKs/Physics/include \
-	-I${PHYSX_HOME}/SDKs/Foundation/include
+PHYSX_INCL=\
+	PhysXLoader/include \
+	Physics/include \
+	Foundation/include
+INCLUDES=$(PHYSX_INCL:%=-I$(PHYSX_HOME)/SDKs/%)
 
+interfaces := $(wildcard *.i)
 
 all: $(MODULE).cmx
 
 clean:: partialclean
 
 # Main module
-$(MODULE).cmx: $(INTERFACES:=.cmx)
+$(MODULE).cmx: $(interfaces:.i=.cmx)
 	$(OCAMLOPT) -pack -o $@ $^
 
 # All implementations depend on (compiled) interfaces
-$(INTERFACES:=.ml): $(INTERFACES:=.cmi)
+# (a little too wide, everything depends on everything)
+$(interfaces:.i=.ml):	$(interfaces:.i=.cmi)
 
 # Generalized SWIG dependencies
 
 # All interfaces depend on SWIG interface
-$(INTERFACES:=.mli): swig.cmi
+$(interfaces:.i=.mli): swig.cmi
 
 # All compilations depend on SWIG
-$(INTERFACES:=.cmx): swig.cmx
+# (a little too wide, everything depends on everything)
+$(interfaces:.i=.cmx): $(interfaces:.i=_wrap.cxx.o) swig.cmx
 
 # SWIG checkout instructions
 swig.ml swig.mli:
