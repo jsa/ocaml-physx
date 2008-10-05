@@ -1,17 +1,31 @@
 
-include config/Makefile Makefile.rules
 
 defaultentry:
-	@echo "hint: make all"
+	@echo -e "\
+    all: build all\n\
+  clean: clean all\n\
+install: install to $(LIBDIR)"
 
-all: glut physx
+include config/Makefile Makefile.rules
+
+all:: partialall
 
 install:: partialinstall
 
 clean:: partialclean
 
+# SWIG
+partialall::
+	cd swig && $(MAKE) all
+
+partialinstall::
+	cd swig && $(MAKE) install
+
+partialclean::
+	cd swig && $(MAKE) clean
+
 # OpenGL bindings
-glut:
+partialall::
 	cd glut && $(MAKE) all
 
 partialinstall::
@@ -21,7 +35,7 @@ partialclean::
 	cd glut && $(MAKE) clean
 
 # PhysX
-physx:
+partialall::
 	cd physx && $(MAKE) all
 
 partialinstall::

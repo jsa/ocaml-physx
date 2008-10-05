@@ -1,4 +1,4 @@
-%module glut
+%module Glut
 %{
 #include <GL/glut.h>
 %}

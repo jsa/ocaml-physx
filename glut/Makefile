@@ -1,38 +1,22 @@
 
 include ../config/Makefile ../Makefile.rules
 
-MODULE=GL
+MODULE=libglut
 GLUT_INCL=\
 	Graphics/include/win32
-INCLUDES=$(GLUT_INCL:%=-I$(PHYSX_HOME)/%)
+INCLUDES=\
+	../swig \
+	$(GLUT_INCL:%=$(PHYSX_HOME)/%)
+VER=0.1
 
 interfaces := $(wildcard *.i)
 
-all: $(MODULE).cmx
-
-install:: partialinstall
-
-clean:: partialclean
+all: $(MODULE).cmxa
+install: .install
+clean: .clean
 
 # Main module
-$(MODULE).cmx: $(interfaces:.i=.cmx)
-	$(OCAMLOPT) -pack -o $@ $^
-
-# All implementations depend on (compiled) interfaces
-$(interfaces:.i=.ml): %.ml: %.cmi
-
-# Generalized SWIG dependencies
-
-# All interfaces depend on SWIG interface
-$(interfaces:.i=.mli): swig.cmi
-
-# All implementations depend on SWIG
-$(interfaces:.i=.cmx): %.cmx: %_wrap.cxx.o swig.cmx
-
-partialclean::
-	rm -f *.ml* *.o *.cxx *.c *.cm? swig.*
-
-partialinstall::
-	cp $(MODULE).cma $(LIBDIR)
+$(MODULE).cmxa: $(interfaces:.i=.cmx) $(interfaces:.i=_wrap.cxx.o)
+	$(OCAMLOPT) -a -o $@ $^
 
 include .depend

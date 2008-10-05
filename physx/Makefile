@@ -6,26 +6,19 @@ PHYSX_INCL=\
 	PhysXLoader/include \
 	Physics/include \
 	Foundation/include
-INCLUDES=$(PHYSX_INCL:%=-I$(PHYSX_HOME)/SDKs/%)
+INCLUDES=\
+	../swig \
+	$(PHYSX_INCL:%=$(PHYSX_HOME)/SDKs/%)
 VER=0.1
 
 interfaces := $(wildcard *.i)
 
 all: $(MODULE).cmxa
-
-install:: partialinstall
-
-clean:: partialclean
+install: .install
+clean: .clean
 
 # Main module
 $(MODULE).cmxa: $(interfaces:.i=.cmx) $(interfaces:.i=_wrap.cxx.o)
-	$(OCAMLOPT) -a -o $@ *.cmx *_wrap.cxx.o
-
-partialinstall::
-	# also $(MODULE).cma
-	cp *.cmi *.cmx $(MODULE).cmxa $(MODULE).a $(LIBDIR)
-
-partialclean::
-	rm -f *.ml* *.a *.o *.cxx *.c *.cm* swig.*
+	$(OCAMLOPT) -a -o $@ $^
 
 include .depend
